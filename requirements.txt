@@ -1,0 +1,47 @@
+# === Core Python ===
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.4.2
+matplotlib==3.8.4
+python-dotenv==1.0.1
+
+# === Notebooks (opcional) ===
+ipython==8.22.2
+notebook==7.1.2
+jupyterlab==4.1.2
+
+# === Testing & Linting ===
+pytest==8.0.0
+ruff==0.4.2
+
+# === FastAPI Backend ===
+fastapi==0.110.1
+uvicorn==0.29.0
+pydantic==2.8.2
+pydantic-settings==2.3.4
+sqlalchemy==2.0.29
+python-multipart==0.0.9
+
+# === Streamlit Frontend ===
+streamlit==1.33.0
+
+# === IA ===
+transformers==4.57.1
+sentence-transformers==2.5.1
+torch==2.9.1
+ollama==0.1.8
+
+# === PDF processing ===
+pypdf==4.1.0
+pdfplumber==0.11.1
+
+# === Utilities ===
+tqdm==4.66.2
+requests==2.31.0
+joblib==1.4.0
+
+# === MLflow (opcional pero útil) ===
+mlflow==2.12.1
+
+# === Local project in editable mode ===
+-e .
