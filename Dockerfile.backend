@@ -1,0 +1,53 @@
+# ------------------------------------------------------------------------------------
+# ETAPA 1: Builder - instala dependencias pesadas
+# ------------------------------------------------------------------------------------
+FROM python:3.12-slim AS builder
+
+WORKDIR /app
+
+# Dependencias de sistema para compilar
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear y usar venv
+RUN python -m venv /app/.venv
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Copiar e instalar dependencias (con pip, mas compatible)
+COPY requirements.txt pyproject.toml ./
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# ------------------------------------------------------------------------------------
+# ETAPA 2: Runner - imagen final limpia
+# ------------------------------------------------------------------------------------
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Solo dependencias runtime
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar venv completo del builder
+COPY --from=builder /app/.venv /app/.venv
+
+# Activar venv
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Copiar código fuente
+COPY hr_ai_filter/ ./hr_ai_filter/
+
+# Crear directorio de datos
+RUN mkdir -p /app/data
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+CMD ["python", "-m", "uvicorn", "hr_ai_filter.backend.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

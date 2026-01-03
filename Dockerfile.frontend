@@ -1,0 +1,43 @@
+# ------------------------------------------------------------------------------------
+# ETAPA 1: Builder - Frontend (más ligero)
+# ------------------------------------------------------------------------------------
+FROM python:3.12-slim AS builder
+
+WORKDIR /app
+
+# Crear venv
+RUN python -m venv /app/.venv
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Instalar dependencias
+COPY requirements-frontend.txt ./
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements-frontend.txt
+
+# ------------------------------------------------------------------------------------
+# ETAPA 2: Runner - Imagen final limpia
+# ------------------------------------------------------------------------------------
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Solo curl para healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar venv
+COPY --from=builder /app/.venv /app/.venv
+
+# Activar venv
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Copiar código
+COPY hr_ai_filter/frontend/ ./hr_ai_filter/frontend/
+
+EXPOSE 8501
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+
+CMD ["python", "-m", "streamlit", "run", "hr_ai_filter/frontend/app.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.headless=true"]
