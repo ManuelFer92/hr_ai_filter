@@ -4,7 +4,7 @@
     <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
 </a>
 
-AI-powered CV filtering system using LLMs, embeddings, RAG and MLOps.
+AI-powered CV filtering system using LLMs, embeddings, RAG and MLOps. 
 
 ## Project Organization
 
