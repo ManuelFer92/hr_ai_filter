@@ -1,44 +1,48 @@
 # === Core Python ===
 numpy==1.26.4
 pandas==2.2.2
-scikit-learn==1.4.2
-matplotlib==3.8.4
 python-dotenv==1.0.1
-
-# === Notebooks (opcional) ===
-ipython==8.22.2
-notebook==7.1.2
-jupyterlab==4.1.2
-
-# === Testing & Linting ===
-pytest==8.0.0
-ruff==0.4.2
+setuptools>=70.0.0  # Required for pkg_resources (MLflow on Python 3.12)
 
 # === FastAPI Backend ===
 fastapi==0.110.1
 uvicorn==0.29.0
 pydantic==2.8.2
 pydantic-settings==2.3.4
-sqlalchemy==2.0.29
 python-multipart==0.0.9
 
-# === Streamlit Frontend ===
-streamlit==1.33.0
+# === Database ===
+sqlalchemy==2.0.29
+psycopg2-binary==2.9.9
 
-# === IA ===
+# === Google Gemini (main LLM - lightweight) ===
+google-generativeai==0.5.4
+
+# === Ollama (local LLM client - lightweight) ===
 ollama==0.1.8
 
-# === PDF processing ===
+# === MLflow (tracking - optional, can be disabled) ===
+mlflow==2.12.1
+
+# === PDF Processing ===
 pypdf==4.1.0
 pdfplumber==0.11.1
 
 # === Utilities ===
-tqdm==4.66.2
 requests==2.31.0
-joblib==1.4.0
+httpx==0.27.0
 
-# === MLflow (opcional pero útil) ===
-mlflow==2.12.1
+# === Testing ===
+pytest==8.0.0
 
-# === Local project in editable mode ===
--e .
+# -----------------------------------------------------------
+# HEAVY DEPS - COMMENTED OUT (add back when needed)
+# These add ~4GB to the image and 10+ min to build time
+# -----------------------------------------------------------
+# torch==2.2.0                  # ~2.5GB
+# sentence-transformers==2.5.1  # ~500MB (needs torch)
+# chromadb==0.4.24              # ~300MB (vector store)
+# langchain>=0.2.0,<0.3.0       # ~200MB
+# langgraph==0.2.0
+# scikit-learn==1.4.2           # ~100MB
+# matplotlib==3.8.4             # ~100MB
