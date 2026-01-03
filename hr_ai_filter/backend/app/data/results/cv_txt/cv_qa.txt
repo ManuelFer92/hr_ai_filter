@@ -1,0 +1,16 @@
+Alice Smith Junior QA Engineer
+Professional Summary
+Detail-oriented Junior QA Engineer with hands-on experience in manual testing, bug reporting, and API
+validation. Familiar with Agile workflows and quality assurance best practices.
+Skills
+- Manual Testing (functional, regression)
+- Bug Tracking (Jira, Trello)
+- API Testing (Postman)
+- Basic Automation (Selenium)
+- SQL for validation
+- Agile / Scrum
+Experience
+QA Intern QualityWorks
+Executed manual test cases, documented defects, validated APIs, and collaborated in Agile sprints.
+Education
+B.Sc. in Information Systems Synthetic Institute (2024)

@@ -3,8 +3,9 @@ import requests
 import time
 import json
 import re
+import os
 
-API = "http://127.0.0.1:8000"
+API = os.getenv("BACKEND_URL", "http://localhost:8000")
 API_LIST_JOBS = f"{API}/jobs/list"
 API_CV_UPLOAD = f"{API}/cv/upload"
 API_ANALYZE = f"{API}/jobs/analyze"
@@ -457,7 +458,6 @@ tab1, tab2 = st.tabs(["📋 Proceso de Evaluación", "📊 Dashboard & Métricas
 
 with tab1:
 
-    @st.cache_data(show_spinner=False)
     def load_jobs():
         try:
             return requests.get(API_LIST_JOBS).json().get("jobs", [])
@@ -520,10 +520,13 @@ with tab1:
         cv_pdf = st.file_uploader("Cargar CV en PDF", type=["pdf"], label_visibility="collapsed")
 
         cv_ok = False
-        emb_ok = False
         cv_text = ""
 
         if cv_pdf:
+            st.markdown(
+                f"<span class='status-badge info'>📄 CV cargado: {cv_pdf.name}</span>",
+                unsafe_allow_html=True
+            )
             with st.spinner("Procesando documento..."):
                 files = {"file": (cv_pdf.name, cv_pdf, "application/pdf")}
                 resp = requests.post(API_CV_UPLOAD, files=files)
@@ -533,9 +536,6 @@ with tab1:
                 cv_text = data.get("text", "")
                 if cv_text.strip():
                     cv_ok = True
-                # FIX: usar embedding_dim en lugar de embeddings_path
-                if data.get("embedding_dim", 0) > 0:
-                    emb_ok = True
 
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -548,7 +548,7 @@ with tab1:
             </div>
         """, unsafe_allow_html=True)
 
-        ready = job_ok and cv_ok and emb_ok
+        ready = job_ok and cv_ok
 
         if not ready:
             st.markdown("<span class='status-badge warning'>⏳ Esperando datos</span>", unsafe_allow_html=True)
@@ -563,7 +563,8 @@ with tab1:
             payload = {
                 "cv_text": cv_text,
                 "job_text": job_text,
-                "job_name": selected_job
+                "job_name": selected_job,
+                "cv_filename": cv_pdf.name
             }
 
             with st.spinner("Analizando con modelo de lenguaje..."):
@@ -589,6 +590,7 @@ with tab1:
 
         if final_result:
             score_value = int(final_result.get("score_final", 0))
+            llm_eval = final_result.get("llm_evaluation_score")
 
             if score_value >= 75:
                 color = "#107C10"
@@ -604,6 +606,16 @@ with tab1:
                 f"<div class='score-box' style='background:{color};'>{score_value}<div style='font-size:16px;margin-top:5px;color:white!important;'>{label}</div></div>",
                 unsafe_allow_html=True
             )
+
+            if llm_eval is not None:
+                st.markdown(
+                    f"""
+                    <div class="status-badge info" style="margin-top:8px;">
+                        🤖 Evaluación LLM (validación): {llm_eval} / 5
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
             
             with st.expander("🔍 Ver datos técnicos (JSON)"):
                 st.json(final_result)

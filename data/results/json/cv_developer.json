@@ -1,0 +1,5 @@
+{
+  "filename": "cv_developer.pdf",
+  "text": "John Doe – Junior Software Developer\nProfessional Summary\nMotivated Junior Developer with strong foundations in Python, JavaScript, and backend development.\nExperienced in building small applications, debugging, and working with REST APIs.\nSkills\n- Python, JavaScript\n- Django, Flask, Node.js\n- REST APIs & JSON\n- Git & GitHub\n- SQL (PostgreSQL, MySQL)\n- Unit Testing\nExperience\nJunior Developer Intern – TechLabs\nBuilt small web modules, assisted in API development, fixed bugs, and wrote unit tests.\nEducation\nB.Sc. in Computer Science – Synthetic University (2024)",
+  "embedding_dim": 384
+}

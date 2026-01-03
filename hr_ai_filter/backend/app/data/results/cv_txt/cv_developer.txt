@@ -1,0 +1,16 @@
+John Doe Junior Software Developer
+Professional Summary
+Motivated Junior Developer with strong foundations in Python, JavaScript, and backend development.
+Experienced in building small applications, debugging, and working with REST APIs.
+Skills
+- Python, JavaScript
+- Django, Flask, Node.js
+- REST APIs & JSON
+- Git & GitHub
+- SQL (PostgreSQL, MySQL)
+- Unit Testing
+Experience
+Junior Developer Intern TechLabs
+Built small web modules, assisted in API development, fixed bugs, and wrote unit tests.
+Education
+B.Sc. in Computer Science Synthetic University (2024)

@@ -1,0 +1,23 @@
+Job Opening: Junior Machine Learning Engineer
+We are seeking a passionate Junior Machine Learning Engineer to join our AI team. The ideal
+candidate has strong foundations in machine learning concepts, experience working with Python, and
+the ability to assist in building, training, and validating ML models. You will collaborate with data
+scientists and engineers to support AI-driven applications.
+Responsibilities
+- Assist in developing and training machine learning models
+- Work with datasets: cleaning, preprocessing, and feature engineering
+- Implement and test ML algorithms in Python
+- Support deployment of models into production environments
+- Collaborate with data scientists and software engineers
+- Document workflows, experiments, and model results
+Required Skills
+- Solid understanding of machine learning fundamentals
+- Experience with Python (NumPy, Pandas, Scikit-learn)
+- Basic knowledge of deep learning frameworks (TensorFlow or PyTorch)
+- Understanding of data preprocessing techniques
+- Familiarity with version control using Git
+- Ability to analyze and interpret model performance metrics
+Nice to Have
+- Experience with cloud platforms (AWS, GCP, Azure)
+- Familiarity with MLOps tools
+- Knowledge of SQL or NoSQL databases

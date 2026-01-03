@@ -1,0 +1,17 @@
+Mar a L pez Junior Frontend Developer
+Professional Summary
+Creative Junior Frontend Developer focused on building responsive and user-friendly web
+interfaces using modern JavaScript frameworks.
+Skills
+(cid:127) HTML, CSS
+(cid:127) JavaScript
+(cid:127) React
+(cid:127) Responsive Design
+(cid:127) Git
+(cid:127) UI basics
+Experience
+Frontend Intern WebStudio
+Developed UI components, fixed layout issues, and collaborated with designers and backend
+developers.
+Education
+B.Sc. in Software Engineering Synthetic University (2024)

@@ -1,0 +1,22 @@
+Job Opening: Junior Python Developer
+We are looking for a motivated Junior Python Developer to join our technology team. The ideal
+candidate has a strong foundation in Python programming, basic experience with backend
+development, and the ability to work collaboratively in an agile environment. You will help build and
+maintain internal applications, write clean and efficient code, and support troubleshooting activities.
+Responsibilities
+- Develop and maintain backend features using Python
+- Assist in building REST APIs and integrating external services
+- Write clean, efficient, and well-documented code
+- Debug and resolve technical issues
+- Collaborate with cross-functional teams in an Agile/Scrum environment
+- Participate in code reviews and continuous improvement initiatives
+Required Skills
+- Solid understanding of Python fundamentals
+- Basic knowledge of Flask or Django
+- Experience working with REST APIs
+- Familiarity with SQL (PostgreSQL or MySQL)
+- Version control using Git/GitHub
+- Understanding of unit testing principles
+Nice to Have
+- Knowledge of JavaScript or frontend frameworks
+- Experience with Docker or cloud services

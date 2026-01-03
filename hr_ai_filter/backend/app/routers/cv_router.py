@@ -1,14 +1,24 @@
+# ============================================================
+# cv_router.py — Subida y procesamiento de CV (solo texto)
+# ============================================================
+
 from fastapi import APIRouter, UploadFile, File, Request, HTTPException
 
 router = APIRouter()
 
+
 @router.post("/upload")
 async def upload_cv(request: Request, file: UploadFile = File(...)):
     """
-    Sube un CV en PDF y devuelve su texto + embedding.
+    Sube un CV en PDF, extrae su texto y lo devuelve.
+    No genera embeddings.
     """
-    if file.content_type not in ("application/pdf",):
-        raise HTTPException(status_code=400, detail="Solo se admiten archivos PDF.")
+
+    if file.content_type != "application/pdf":
+        raise HTTPException(
+            status_code=400,
+            detail="Solo se admiten archivos PDF."
+        )
 
     cv_service = request.app.state.cv_service
 
@@ -18,6 +28,5 @@ async def upload_cv(request: Request, file: UploadFile = File(...)):
     return {
         "filename": file.filename,
         "text": result["text"],
-        "embedding_dim": len(result["embedding"]) if result["embedding"] else 0,
         "paths": result["paths"],
     }
