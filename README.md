@@ -1,61 +1,84 @@
 # HR AI Filter
 
-<a target="_blank" href="https://cookiecutter-data-science.drivendata.org/">
-    <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
-</a>
+AI-powered CV filtering system using LLMs, embeddings, and MLOps.
 
-AI-powered CV filtering system using LLMs, embeddings, RAG and MLOps. 
+## 🚀 Quick Start
 
-## Project Organization
+```bash
+# 1. Setup
+cp .env.example .env
+# Edit .env: Set GOOGLE_API_KEY and choose provider (gemini or ollama)
 
-```
-├── LICENSE            <- Open-source license if one is chosen
-├── Makefile           <- Makefile with convenience commands like `make data` or `make train`
-├── README.md          <- The top-level README for developers using this project.
-├── data
-│   ├── external       <- Data from third party sources.
-│   ├── interim        <- Intermediate data that has been transformed.
-│   ├── processed      <- The final, canonical data sets for modeling.
-│   └── raw            <- The original, immutable data dump.
-│
-├── docs               <- A default mkdocs project; see www.mkdocs.org for details
-│
-├── models             <- Trained and serialized models, model predictions, or model summaries
-│
-├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-│                         the creator's initials, and a short `-` delimited description, e.g.
-│                         `1.0-jqp-initial-data-exploration`.
-│
-├── pyproject.toml     <- Project configuration file with package metadata for 
-│                         hr_ai_filter and configuration for tools like black
-│
-├── references         <- Data dictionaries, manuals, and all other explanatory materials.
-│
-├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-│   └── figures        <- Generated graphics and figures to be used in reporting
-│
-├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-│                         generated with `pip freeze > requirements.txt`
-│
-├── setup.cfg          <- Configuration file for flake8
-│
-└── hr_ai_filter   <- Source code for use in this project.
-    │
-    ├── __init__.py             <- Makes hr_ai_filter a Python module
-    │
-    ├── config.py               <- Store useful variables and configuration
-    │
-    ├── dataset.py              <- Scripts to download or generate data
-    │
-    ├── features.py             <- Code to create features for modeling
-    │
-    ├── modeling                
-    │   ├── __init__.py 
-    │   ├── predict.py          <- Code to run model inference with trained models          
-    │   └── train.py            <- Code to train models
-    │
-    └── plots.py                <- Code to create visualizations
+# 2. Start services
+docker compose up -d
+
+# 3. Add job descriptions
+# Place PDF files in: data/jobs/jobs_pdf/
+
+# 4. Restart backend to load jobs
+docker compose restart backend
+
+# 5. Open UI
+# http://localhost:8501
 ```
 
---------
+## 🐳 Services
 
+| Service | Port | Description |
+|---------|------|-------------|
+| Frontend | 8501 | Streamlit UI (Wizard) |
+| Backend | 8000 | FastAPI + Swagger |
+| MLflow | 5000 | Experiment Tracking |
+| pgAdmin | 5050 | PostgreSQL UI (admin@example.com / admin) |
+| PostgreSQL | 5432 | Database |
+| ChromaDB | 8585 | Vector DB API |
+| Ollama | 11435 | Local LLM API |
+
+## 🔧 Configuration (.env)
+
+Switch between **Gemini** (Cloud, Fast) and **Ollama** (Local, Private):
+
+```bash
+# Option 1: Gemini (Recommended for dev)
+LLM_PROVIDER=gemini
+LLM_MODEL=gemini-1.5-flash
+GOOGLE_API_KEY=your_key
+
+# Option 2: Ollama (Local)
+LLM_PROVIDER=ollama
+LLM_MODEL=llama3.1:8b
+# Model auto-downloads on startup
+```
+
+## 📁 Project Structure
+
+```
+hr_ai_filter/
+├── docker-compose.yml       # 7 services
+├── data/                    # Volume data (jobs, DBs)
+├── hr_ai_filter/
+│   ├── backend/
+│   │   ├── app/
+│   │   │   ├── llm_providers/   # LLM Abstraction
+│   │   │   ├── services/        # Logic (CV, Job, LLM)
+│   │   │   └── routers/         # API Endpoints
+│   └── frontend/                # Streamlit App
+└── TODO.md                  # Detailed Roadmap
+```
+
+## 📋 Features & Architecture
+
+### Key Features
+- **Multi-LLM Support**: Seamlessly switch between Gemini (Cloud) and Ollama (Local).
+- **Auto-Infrastructure**: 7 containerized services (DB, MLOps, Vector Store).
+- **Job Parsing**: Automatically loads PDF job descriptions on startup.
+- **Smart Evaluation**: LLM analysis of CV vs Job with scoring.
+
+### 🏗 Architecture Highlights
+- **Hybrid Storage**: Combines **PostgreSQL** (structured data) + **ChromaDB** (vector embeddings) for optimal data handling.
+- **MLOps Integrated**: **MLflow** included from day one to track model performance and KPIs.
+- **Provider Abstraction**: Factory pattern allows plugging in new LLMs without changing business logic.
+- **Scalable Design**: Ready for asynchronous batch processing and complex pipelines (LangGraph).
+
+## License
+MIT
