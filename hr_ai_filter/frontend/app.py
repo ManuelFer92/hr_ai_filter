@@ -5,10 +5,12 @@ import json
 import re
 import os
 
-API = os.getenv("BACKEND_URL", "http://localhost:8000")
+API = os.getenv("API_URL", "http://localhost:8000")
 API_LIST_JOBS = f"{API}/jobs/list"
 API_CV_UPLOAD = f"{API}/cv/upload"
 API_ANALYZE = f"{API}/jobs/analyze"
+API_LLM_CONFIG = f"{API}/llm/config"
+API_LLM_SWITCH = f"{API}/llm/switch"
 
 st.set_page_config(
     page_title="HR AI Filter",
@@ -453,6 +455,90 @@ st.markdown("""
     <div class="header-sub">Análisis automatizado mediante IA • Embeddings • LLM</div>
 </div>
 """, unsafe_allow_html=True)
+
+# ============================================================
+# LLM Provider & Model Selector
+# ============================================================
+def get_llm_config():
+    try:
+        return requests.get(API_LLM_CONFIG, timeout=5).json()
+    except:
+        return None
+
+def switch_llm(provider, model):
+    try:
+        resp = requests.post(API_LLM_SWITCH, json={"provider": provider, "model": model}, timeout=15)
+        return resp.json()
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+# LLM Config section
+llm_config = get_llm_config()
+if llm_config:
+    with st.expander("⚙️ Configuración del Modelo LLM", expanded=False):
+        current_provider = llm_config.get("current_provider", "ollama")
+        current_model = llm_config.get("current_model", "N/A")
+        avail = llm_config.get("available_providers", {})
+        
+        col_provider, col_model, col_action = st.columns([1.5, 2, 1])
+        
+        with col_provider:
+            providers = ["ollama", "gemini"]
+            provider_idx = providers.index(current_provider) if current_provider in providers else 0
+            new_provider = st.selectbox(
+                "🤖 Proveedor",
+                providers,
+                index=provider_idx,
+                format_func=lambda x: f"{x.capitalize()} {'✓' if avail.get(x, {}).get('available', False) else '✗'}"
+            )
+        
+        with col_model:
+            # Get models for selected provider
+            provider_info = avail.get(new_provider, {})
+            available_models = provider_info.get("models", [])
+            installed_models = provider_info.get("installed_models", [])
+            
+            if not available_models:
+                available_models = ["gemma2:2b", "llama3.1:8b"] if new_provider == "ollama" else ["gemini-2.5-flash"]
+            
+            # Format function to show installed status for Ollama
+            def format_model(m):
+                if new_provider == "ollama":
+                    if m in installed_models:
+                        return f"{m} ✓"
+                    return f"{m} (📥 descarga)"
+                return m
+            
+            # If current model is in list, select it; otherwise select first
+            model_idx = available_models.index(current_model) if current_model in available_models else 0
+            new_model = st.selectbox(
+                "📦 Modelo",
+                available_models,
+                index=model_idx,
+                format_func=format_model
+            )
+        
+        with col_action:
+            st.write("")  # Spacer
+            st.write("")  # Spacer
+            if st.button("🔄 Aplicar", use_container_width=True):
+                if new_provider != current_provider or new_model != current_model:
+                    # Check if Ollama model needs download
+                    needs_download = (new_provider == "ollama" and new_model not in installed_models)
+                    spinner_text = "Descargando modelo..." if needs_download else "Cambiando modelo..."
+                    
+                    with st.spinner(spinner_text):
+                        result = switch_llm(new_provider, new_model)
+                    if result.get("status") == "success":
+                        st.success(f"✅ {new_provider}/{new_model}")
+                        st.rerun()
+                    else:
+                        st.error(f"❌ {result.get('detail', result.get('message', 'Error'))}")
+                else:
+                    st.info("ℹ️ Sin cambios")
+        
+        # Show current config
+        st.caption(f"**Actual:** {current_provider} / {current_model}")
 
 tab1, tab2 = st.tabs(["📋 Proceso de Evaluación", "📊 Dashboard & Métricas"])
 
