@@ -4,12 +4,17 @@ from ..utils.text_utils import clean_text
 
 class JobService:
     def __init__(self):
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        jobs_dir = os.path.join(base_dir, "data", "jobs", "jobs_pdf")
+        # Use Docker volume path /app/data or fallback to local ./data
+        data_dir = os.environ.get("DATA_DIR", "/app/data")
+        jobs_dir = os.path.join(data_dir, "jobs", "jobs_pdf")
 
-        print(f"🔍 Buscando job PDFs en: {jobs_dir}")
+        print(f"🔍 Looking for job PDFs in: {jobs_dir}")
 
         self.jobs = []
+        
+        # Create directory if it doesn't exist
+        os.makedirs(jobs_dir, exist_ok=True)
+        
         for file in os.listdir(jobs_dir):
             if file.endswith(".pdf"):
                 path = os.path.join(jobs_dir, file)

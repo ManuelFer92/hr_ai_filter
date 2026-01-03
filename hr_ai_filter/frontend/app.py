@@ -3,8 +3,9 @@ import requests
 import time
 import json
 import re
+import os
 
-API = "http://127.0.0.1:8000"
+API = os.getenv("API_URL", "http://127.0.0.1:8000")
 API_LIST_JOBS = f"{API}/jobs/list"
 API_CV_UPLOAD = f"{API}/cv/upload"
 API_ANALYZE = f"{API}/jobs/analyze"
@@ -457,10 +458,10 @@ tab1, tab2 = st.tabs(["📋 Proceso de Evaluación", "📊 Dashboard & Métricas
 
 with tab1:
 
-    @st.cache_data(show_spinner=False)
+    @st.cache_data(show_spinner=False, ttl=60)  # Refresh every 60 seconds
     def load_jobs():
         try:
-            return requests.get(API_LIST_JOBS).json().get("jobs", [])
+            return requests.get(API_LIST_JOBS, timeout=5).json().get("jobs", [])
         except:
             return []
 
