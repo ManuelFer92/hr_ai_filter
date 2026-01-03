@@ -1,5 +1,8 @@
 # Data
 /data/
+# Allow tracking of sample job PDFs so colleagues get them
+!/data/jobs/
+!/data/jobs/**/*.pdf
 
 # Mac OS-specific storage files
 .DS_Store
