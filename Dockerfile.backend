@@ -40,7 +40,7 @@ COPY --from=builder /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
 # Copiar código fuente
-COPY hr_ai_filter/ ./hr_ai_filter/
+COPY hr_ai_filter/backend/ ./backend
 
 # Crear directorio de datos
 RUN mkdir -p /app/data
