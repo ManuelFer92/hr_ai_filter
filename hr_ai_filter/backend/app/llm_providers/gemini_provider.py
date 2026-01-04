@@ -1,5 +1,5 @@
 # ============================================================
-# gemini_provider.py — Google Gemini LLM Provider
+# gemini_provider.py — Google Gemini LLM Provider with LangGraph
 # ============================================================
 
 import os
@@ -12,12 +12,13 @@ import google.generativeai as genai
 import mlflow
 
 from .base import LLMProvider
+from ..graphs.cv_analysis_graph import CVAnalysisGraph
 
 
 class GeminiProvider(LLMProvider):
     """
     LLM Provider implementation for Google Gemini API.
-    Uses structured JSON output mode for reliable parsing.
+    Now uses LangGraph for structured workflow orchestration.
     """
 
     def __init__(self):
@@ -29,9 +30,15 @@ class GeminiProvider(LLMProvider):
 
         self._model_name = os.getenv("LLM_MODEL", "gemini-2.5-flash")
         self._model = genai.GenerativeModel(self._model_name)
+        
+        # Initialize LangGraph workflow (without checkpointing for simplicity)
+        use_checkpointing = os.getenv("LANGGRAPH_CHECKPOINTING", "false").lower() == "true"
+        self._graph = CVAnalysisGraph(llm_provider=self, use_checkpointing=use_checkpointing)
 
-        print(f"🔥 GeminiProvider initialized")
+        print(f"🔥 GeminiProvider initialized with LangGraph")
         print(f"   → Model: {self._model_name}")
+        print(f"   → Workflow: CVAnalysisGraph")
+        print(f"   → Checkpointing: {use_checkpointing}")
 
     @property
     def provider_name(self) -> str:
@@ -48,87 +55,23 @@ class GeminiProvider(LLMProvider):
         job_name: str,
         cv_filename: str
     ) -> dict:
-        """Compare CV against job using Gemini API."""
-
-        prompt = self._build_comparison_prompt(cv_text, job_text, job_name)
-        start_time = time.time()
-
-        with mlflow.start_run(run_name=f"eval_{job_name}"):
-            # Log params and tags
-            mlflow.log_param("job_name", job_name)
-            mlflow.log_param("model_name", self._model_name)
-            mlflow.set_tag("cv_filename", cv_filename)
-            mlflow.set_tag("llm_model", self._model_name)
-            mlflow.set_tag("llm_provider", "gemini")
-            mlflow.set_tag("task", "cv_job_matching")
-
-            # Pre-call metrics
-            mlflow.log_metric("prompt_length", len(prompt))
-            mlflow.log_metric("cv_text_length", len(cv_text))
-            mlflow.log_metric("job_text_length", len(job_text))
-
-            # Call Gemini API
-            response = self._model.generate_content(
-                prompt,
-                generation_config=genai.GenerationConfig(
-                    response_mime_type="application/json"
-                )
-            )
-
-            elapsed = time.time() - start_time
-            raw_output = response.text
-
-            # Post-call metrics
-            mlflow.log_metric("response_time_ms", elapsed * 1000)
-            mlflow.log_metric("response_length", len(raw_output))
-
-            # Parse response
-            parsed_ok = 0
-            result = None
-
-            try:
-                result = json.loads(raw_output)
-                parsed_ok = 1
-            except Exception:
-                # Try to extract JSON from response
-                matches = re.findall(r"\{.*\}", raw_output, re.DOTALL)
-                if matches:
-                    try:
-                        result = json.loads(matches[0])
-                        parsed_ok = 1
-                    except Exception:
-                        pass
-
-            mlflow.log_metric("parse_success", parsed_ok)
-
-            if not result:
-                mlflow.log_text(raw_output, "raw_response.txt")
-                raise RuntimeError("❌ Could not parse LLM response")
-
-            # Business metrics
-            score = result.get("score_final")
-            if isinstance(score, (int, float)):
-                mlflow.log_metric("score_final", score)
-
-            fortalezas = result.get("fortalezas", [])
-            debilidades = result.get("debilidades", [])
-            resumen = result.get("resumen", "")
-
-            mlflow.log_metric("fortalezas_count", len(fortalezas))
-            mlflow.log_metric("debilidades_count", len(debilidades))
-            mlflow.log_metric("summary_length", len(resumen))
-
-            # LLM-as-a-judge evaluation
-            eval_score = self.evaluate_recommendation(cv_text, job_text, result)
-            if eval_score is not None:
-                mlflow.log_metric("llm_evaluation_score", eval_score)
-                result["llm_evaluation_score"] = eval_score
-
-            # Log artifacts
-            mlflow.log_text(prompt.strip(), "prompt.txt")
-            mlflow.log_text(raw_output.strip(), "raw_response.txt")
-
-            return result
+        """
+        Compare CV against job using LangGraph workflow.
+        
+        This method now delegates to the LangGraph workflow which:
+        1. Extracts skills from CV
+        2. Extracts requirements from job
+        3. Calculates skill match
+        4. Generates recommendation
+        5. Evaluates quality
+        """
+        
+        return self._graph.analyze(
+            cv_text=cv_text,
+            job_text=job_text,
+            job_name=job_name,
+            cv_filename=cv_filename
+        )
 
     def evaluate_recommendation(
         self,
@@ -145,5 +88,6 @@ class GeminiProvider(LLMProvider):
             raw = response.text.strip()
             value = int(re.findall(r"\d+", raw)[0])
             return max(1, min(value, 5))
-        except Exception:
+        except Exception as e:
+            print(f"⚠️ Evaluation failed: {e}")
             return None

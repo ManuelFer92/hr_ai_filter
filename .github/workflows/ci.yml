@@ -1,0 +1,95 @@
+name: CI - HR AI Filter Backend
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Run unit & e2e tests
+    runs-on: ubuntu-latest
+
+    env:
+      env:
+        LLM_PROVIDER: gemini
+        LLM_MODEL: gemini-2.5-flash
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        LANGGRAPH_CHECKPOINTING: "false"
+        MLFLOW_TRACKING_URI: file:///tmp/mlruns
+
+    services:
+      ollama:
+        image: ollama/ollama:latest
+        ports:
+          - 11434:11434
+        options: >-
+          --health-cmd "ollama list || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      # ----------------------------------------------------
+      # Checkout
+      # ----------------------------------------------------
+      - name: 🧾 Checkout repository
+        uses: actions/checkout@v4
+
+      # ----------------------------------------------------
+      # Python
+      # ----------------------------------------------------
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      # ----------------------------------------------------
+      # System deps (pdfplumber)
+      # ----------------------------------------------------
+      - name: 📦 Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            poppler-utils \
+            libpoppler-cpp-dev
+
+      # ----------------------------------------------------
+      # Python deps
+      # ----------------------------------------------------
+      - name: 📥 Install Python dependencies
+        working-directory: .
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov httpx
+
+      # ----------------------------------------------------
+      # Unit tests
+      # ----------------------------------------------------
+      - name: 🧪 Run unit tests
+        working-directory: hr_ai_filter/backend
+        run: |
+          pytest tests/unit \
+            --cov=app \
+            --cov-report=term-missing
+
+      # ----------------------------------------------------
+      # E2E tests
+      # ----------------------------------------------------
+      - name: 🌐 Run E2E tests
+        working-directory: hr_ai_filter/backend
+        run: |
+          pytest tests/e2e -v
+
+      # ----------------------------------------------------
+      # Coverage artifact (optional)
+      # ----------------------------------------------------
+      - name: 📊 Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: backend/.coverage
