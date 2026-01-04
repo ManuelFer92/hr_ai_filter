@@ -42,7 +42,7 @@ pytest==8.0.0
 # torch==2.2.0                  # ~2.5GB
 # sentence-transformers==2.5.1  # ~500MB (needs torch)
 # chromadb==0.4.24              # ~300MB (vector store)
-# langchain>=0.2.0,<0.3.0       # ~200MB
-# langgraph==0.2.0
+langchain>=0.2.0,<0.3.0       # ~200MB
+langgraph==0.2.0
 # scikit-learn==1.4.2           # ~100MB
 # matplotlib==3.8.4             # ~100MB
