@@ -12,12 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      env:
-        LLM_PROVIDER: gemini
-        LLM_MODEL: gemini-2.5-flash
-        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-        LANGGRAPH_CHECKPOINTING: "false"
-        MLFLOW_TRACKING_URI: file:///tmp/mlruns
+      LLM_PROVIDER: gemini
+      LLM_MODEL: gemini-2.5-flash
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      LANGGRAPH_CHECKPOINTING: "false"
+      MLFLOW_TRACKING_URI: file:///tmp/mlruns
 
     services:
       ollama:
