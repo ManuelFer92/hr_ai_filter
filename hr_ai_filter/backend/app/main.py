@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .routers.cv_router import router as cv_router
 from .routers.job_router import router as job_router
+from .routers.llm_router import router as llm_router
 
 from .services.cv_service import CVService
 from .services.job_service import JobService
@@ -27,6 +28,14 @@ def create_app() -> FastAPI:
     # --------------------------------------------------------
     app.include_router(cv_router, prefix="/cv", tags=["CV"])
     app.include_router(job_router, prefix="/jobs", tags=["Jobs"])
+    app.include_router(llm_router, prefix="/llm", tags=["LLM"])
+
+    # --------------------------------------------------------
+    # Health Check (for Docker)
+    # --------------------------------------------------------
+    @app.get("/health")
+    def health_check():
+        return {"status": "healthy"}
 
     # --------------------------------------------------------
     # Middleware (CORS)

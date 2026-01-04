@@ -11,19 +11,11 @@ class JobService:
     def __init__(self):
         """
         Carga los PDFs de convocatorias desde:
-        /app/app/data/jobs/jobs_pdf
-        Compatible con local y Docker
+        /app/data/jobs (Docker) or configurable via JOBS_DIR env var
         """
 
-        # __file__ = /app/app/services/job_service.py
-        # subir 2 niveles → /app/app
-        BASE_DIR = os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))
-        )
-
-        self.jobs_dir = os.path.join(
-            BASE_DIR, "data", "jobs", "jobs_pdf"
-        )
+        # Use environment variable or default to /app/data/jobs
+        self.jobs_dir = os.environ.get("JOBS_DIR", "/app/data/jobs")
 
         print(f"📂 JobService | Buscando jobs en: {self.jobs_dir}")
 

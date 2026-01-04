@@ -1,17 +1,162 @@
+version: "3.9"
+
 services:
+  # ============================================
+  # PostgreSQL - Core Data + MLflow Backend
+  # ============================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: hr_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-hr_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hr_password}
+      POSTGRES_DB: ${POSTGRES_DB:-hr_ai_filter}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hr_user} -d ${POSTGRES_DB:-hr_ai_filter}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ============================================
+  # pgAdmin - PostgreSQL Web UI
+  # ============================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: hr_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # ============================================
+  # ChromaDB - Vector Store
+  # ============================================
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: hr_chroma
+    ports:
+      - "8585:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - ALLOW_RESET=TRUE
+      - IS_PERSISTENT=TRUE
+    restart: unless-stopped
+
+  # ============================================
+  # Ollama - Local LLM Server
+  # ============================================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: hr_ollama
+    ports:
+      - "11435:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # Just serve - model can be pulled via: docker compose exec ollama ollama pull llama3.1:8b
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # ============================================
+  # MLflow - Experiment Tracking
+  # ============================================
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.12.1
+    container_name: hr_ai_filter-mlflow-1
+    ports:
+      - "5000:5000"
+    command: >
+      mlflow server 
+      --host 0.0.0.0 
+      --port 5000 
+      --backend-store-uri sqlite:///mlruns/mlflow.db
+      --default-artifact-root /mlruns
+    volumes:
+      - mlflow_data:/mlruns
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+
+  # ============================================
+  # Backend - FastAPI
+  # ============================================
   backend:
-    image: josefernandez92/hr-ai-filter-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: hr_ai_filter-backend-1
     ports:
       - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+      chroma:
+        condition: service_started
+      mlflow:
+        condition: service_started
+    environment:
+      # Database
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-hr_user}:${POSTGRES_PASSWORD:-hr_password}@postgres:5432/${POSTGRES_DB:-hr_ai_filter}
+      # LLM
+      - OLLAMA_HOST=http://ollama:11434
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - LLM_PROVIDER=${LLM_PROVIDER:-gemini}
+      - LLM_MODEL=${LLM_MODEL:-gemini-2.0-flash-exp}
+      # MLflow
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      # Chroma
+      - CHROMA_HOST=http://chroma:8000
+      # Jobs directory
+      - JOBS_DIR=/app/data/jobs/jobs_pdf
+    volumes:
+      - ./data:/app/data
+      - ./hr_ai_filter:/app/hr_ai_filter
+    restart: unless-stopped
 
+  # ============================================
+  # Frontend - Streamlit
+  # ============================================
   frontend:
-    image: josefernandez92/hr-ai-filter-frontend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: hr_ai_filter-frontend-1
     ports:
       - "8501:8501"
     depends_on:
       - backend
+    environment:
+      - API_URL=http://backend:8000
+    volumes:
+      - ./hr_ai_filter/frontend:/app/hr_ai_filter/frontend
+    restart: unless-stopped
 
-  mlflow:
-    image: ghcr.io/mlflow/mlflow:v2.12.1
-    ports:
-      - "5000:5000"
+volumes:
+  postgres_data:
+  chroma_data:
+  ollama_data:
+  mlflow_data:
