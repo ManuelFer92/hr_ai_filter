@@ -14,7 +14,7 @@ router = APIRouter()
 
 # Available models per provider
 AVAILABLE_MODELS = {
-    "gemini": ["gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash"],
+    "gemini": ["gemini-2.5-flash"],
     "ollama": ["gemma2:2b", "llama3.1:8b", "mistral:7b"]
 }
 

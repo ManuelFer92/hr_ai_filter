@@ -27,7 +27,10 @@ cp .env.example .env
 nano .env  # Add GOOGLE_API_KEY=your_key_here
 ```
 
-### 3. Run with Docker 🐳
+### 3. Add Jobs
+Copy the pdf os job description to the `data/jobs/jobs_pdf` directory.
+
+### 4. Run with Docker 🐳
 Start the full stack (Frontend, Backend, DB, MLflow):
 ```bash
 docker compose up -d --build
