@@ -1,5 +1,10 @@
 from pathlib import Path
+import pytest
 
+# Path to test CV
+PDF_PATH = Path(__file__).parent.parent / "test_cvs" / "CV_DevOps.pdf"
+
+@pytest.mark.skipif(not PDF_PATH.exists(), reason="Test CV file not available")
 def test_full_cv_analysis(client):
     payload = {
         "provider": "gemini",
@@ -13,8 +18,8 @@ def test_full_cv_analysis(client):
     jobs = jobs_resp.json()["jobs"]
     assert jobs, "No hay jobs cargados para test"
 
-    file_name = 'CV_DevOps.pdf'
-    pdf_path = Path(__file__).parent.parent / "test_cvs" / f'{file_name}'
+    file_name = PDF_PATH.name
+    pdf_path = PDF_PATH
 
     with open(pdf_path, "rb") as f:
         resp = client.post(

@@ -12,12 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      env:
-        LLM_PROVIDER: gemini
-        LLM_MODEL: gemini-2.5-flash
-        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-        LANGGRAPH_CHECKPOINTING: "false"
-        MLFLOW_TRACKING_URI: file:///tmp/mlruns
+      LLM_PROVIDER: gemini
+      LLM_MODEL: gemini-2.5-flash
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      LANGGRAPH_CHECKPOINTING: "false"
+      MLFLOW_TRACKING_URI: file:///tmp/mlruns
 
     services:
       ollama:
@@ -71,7 +70,10 @@ jobs:
       # ----------------------------------------------------
       - name: 🧪 Run unit tests
         working-directory: hr_ai_filter/backend
+        env:
+          PYTHONPATH: ${{ github.workspace }}/hr_ai_filter
         run: |
+          python -c "import sys; print('PYTHONPATH:', sys.path[0]); print('sys.path sample:', sys.path[:3])"
           pytest tests/unit \
             --cov=app \
             --cov-report=term-missing
@@ -81,7 +83,10 @@ jobs:
       # ----------------------------------------------------
       - name: 🌐 Run E2E tests
         working-directory: hr_ai_filter/backend
+        env:
+          PYTHONPATH: ${{ github.workspace }}/hr_ai_filter
         run: |
+          python -c "import sys; print('PYTHONPATH:', sys.path[0]); print('sys.path sample:', sys.path[:3])"
           pytest tests/e2e -v
 
       # ----------------------------------------------------
@@ -92,4 +97,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: backend/.coverage
+          path: hr_ai_filter/backend/.coverage
