@@ -70,6 +70,8 @@ jobs:
       # ----------------------------------------------------
       - name: 🧪 Run unit tests
         working-directory: hr_ai_filter/backend
+        env:
+          PYTHONPATH: ${{ github.workspace }}/hr_ai_filter
         run: |
           pytest tests/unit \
             --cov=app \
@@ -80,6 +82,8 @@ jobs:
       # ----------------------------------------------------
       - name: 🌐 Run E2E tests
         working-directory: hr_ai_filter/backend
+        env:
+          PYTHONPATH: ${{ github.workspace }}/hr_ai_filter
         run: |
           pytest tests/e2e -v
 
@@ -91,4 +95,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: backend/.coverage
+          path: hr_ai_filter/backend/.coverage
