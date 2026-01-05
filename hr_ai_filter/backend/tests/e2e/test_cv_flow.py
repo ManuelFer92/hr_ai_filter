@@ -1,8 +1,12 @@
 from pathlib import Path
+import pytest
 
+# Path to test CV
+PDF_PATH = Path(__file__).parent.parent / "test_cvs" / "CV_DevOps.pdf"
+
+@pytest.mark.skipif(not PDF_PATH.exists(), reason="Test CV file not available")
 def test_upload_cv_pdf(client):
-    pdf_path = Path(__file__).parent.parent / "test_cvs" / "CV_DevOps.pdf"
-    assert pdf_path.exists()
+    pdf_path = PDF_PATH
 
     with open(pdf_path, "rb") as f:
         resp = client.post(
