@@ -65,6 +65,42 @@ def mock_mlflow():
 
 @pytest.fixture
 def client():
+    # Ensure test assets exist (create minimal PDFs for CVs and Jobs)
+    from pathlib import Path
+    import os
+
+    tests_dir = Path(__file__).parent.parent
+
+    # Create test_cvs folder and a minimal CV PDF
+    test_cvs_dir = tests_dir / "test_cvs"
+    test_cvs_dir.mkdir(exist_ok=True)
+    cv_pdf = test_cvs_dir / "CV_DevOps.pdf"
+
+    def _write_minimal_pdf(path, text="Hello from test PDF"):
+        content = (
+            b"%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n"
+            b"2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n"
+            b"3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 4 0 R >>\nendobj\n"
+            b"4 0 obj\n<< /Length 44 >>\nstream\nBT /F1 12 Tf 72 712 Td ("
+            + text.encode("utf-8")
+            + b") Tj ET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000010 00000 n \n0000000060 00000 n \n0000000110 00000 n \n0000000210 00000 n \ntrailer\n<< /Root 1 0 R /Size 5 >>\nstartxref\n300\n%%EOF"
+        )
+        with open(path, "wb") as f:
+            f.write(content)
+
+    if not cv_pdf.exists():
+        _write_minimal_pdf(cv_pdf, "DevOps CV")
+
+    # Create a test jobs folder and a job PDF that JobService will load
+    test_jobs_dir = tests_dir / "test_jobs"
+    test_jobs_dir.mkdir(exist_ok=True)
+    job_pdf = test_jobs_dir / "Ingeniero_DevOps.pdf"
+    if not job_pdf.exists():
+        _write_minimal_pdf(job_pdf, "Ingeniero DevOps\nRequisitos: Python, AWS")
+
+    # Point JobService to use our test jobs dir
+    os.environ["JOBS_DIR"] = str(test_jobs_dir)
+
     # Crear la app
     app = create_app()
 
