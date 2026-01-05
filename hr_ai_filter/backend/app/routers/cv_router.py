@@ -8,9 +8,19 @@ from fastapi import APIRouter, UploadFile, File, Request, HTTPException
 
 router = APIRouter()
 
-# CV storage directory
-CV_DIR = Path("/app/data/cvs")
-CV_DIR.mkdir(parents=True, exist_ok=True)
+# CV storage directory (use project data directory)
+from ..utils.paths import DATA_DIR
+CV_DIR = Path(DATA_DIR) / "cvs"
+
+# Avoid creating directories at import time to prevent permission errors in CI or constrained environments.
+# Create directories when needed at request time instead.
+
+def ensure_cv_dir():
+    try:
+        CV_DIR.mkdir(parents=True, exist_ok=True)
+    except PermissionError:
+        # Don't raise during import; let endpoints handle write errors at runtime.
+        pass
 
 
 @router.get("/list")
@@ -52,10 +62,16 @@ async def upload_cv(request: Request, file: UploadFile = File(...)):
     file_bytes = await file.read()
     result = cv_service.process_cv(file.filename, file_bytes)
 
-    # Save file to CV directory
+    # Ensure CV dir exists and save file to it
+    ensure_cv_dir()
     cv_path = CV_DIR / file.filename
-    with open(cv_path, "wb") as f:
-        f.write(file_bytes)
+    try:
+        with open(cv_path, "wb") as f:
+            f.write(file_bytes)
+    except PermissionError as e:
+        raise HTTPException(status_code=500, detail=f"Permission error saving CV: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error saving CV: {e}")
 
     return {
         "filename": file.filename,
