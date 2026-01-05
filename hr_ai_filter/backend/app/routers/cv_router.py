@@ -9,7 +9,7 @@ from fastapi import APIRouter, UploadFile, File, Request, HTTPException
 router = APIRouter()
 
 # CV storage directory (use project data directory)
-from app.utils.paths import DATA_DIR
+from ..utils.paths import DATA_DIR
 CV_DIR = Path(DATA_DIR) / "cvs"
 
 # Avoid creating directories at import time to prevent permission errors in CI or constrained environments.
