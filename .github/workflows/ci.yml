@@ -73,6 +73,7 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/hr_ai_filter
         run: |
+          python -c "import sys; print('PYTHONPATH:', sys.path[0]); print('sys.path sample:', sys.path[:3])"
           pytest tests/unit \
             --cov=app \
             --cov-report=term-missing
@@ -85,6 +86,7 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/hr_ai_filter
         run: |
+          python -c "import sys; print('PYTHONPATH:', sys.path[0]); print('sys.path sample:', sys.path[:3])"
           pytest tests/e2e -v
 
       # ----------------------------------------------------
